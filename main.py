@@ -1,4 +1,6 @@
 import sys
+from random import randint
+import re
 
 
 def titulo(msg):
@@ -6,6 +8,24 @@ def titulo(msg):
     print('-'*tamanho)
     print(msg)
     print('-'*tamanho)
+
+def valida_int(msg):
+    while True:
+        try:
+            n = int(input(msg))
+        except:
+            print('ERRO! Informe um numero inteiro válido.')
+        else:
+            return n
+
+def valida_email(msg):
+    padrao = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+    while True:
+        email = input(msg)
+        if re.fullmatch(padrao, email):
+            return email
+        else:
+            print('E-mail inválido!')
 
 class Loja:
     def __init__(self, nome):
@@ -64,13 +84,15 @@ class CarrinhoDeCompras:
         self.lista_carrinho = []
 
     def exibir_carrinho(self):
-        print('CARRINHO')
+        titulo('CARRINHO')
+        if len(self.lista_carrinho) == 0:
+            print('Seu carrinho está vazio.')
         for produto in self.lista_carrinho:
            print(f'{produto.nome}, {produto.preco}R$, Categoria: {produto.categoria}')
         print()
 
     def adicionar_produto(self, nome):
-        quantidade = int(input('Qual a quantidade? '))
+        quantidade = valida_int('Qual a quantidade? ')
         for produto in loja.lista_de_produtos:
             if produto.nome == nome:
                 CarrinhoDeCompras.produto_encontrado = True
@@ -101,7 +123,7 @@ class CarrinhoDeCompras:
                 CarrinhoDeCompras.produto_encontrado = True
 
         if CarrinhoDeCompras.produto_encontrado:
-            quantidade = int(input('Quantidade: '))
+            quantidade = valida_int('Quantidade: ')
             if opcao == 'A':
                 for produto in self.lista_carrinho[:]:
                     quantidade -= 1
@@ -130,37 +152,53 @@ class CarrinhoDeCompras:
         print(f'O valor da compra é {valor_da_compra},00R$. Volte sempre!')
         sys.exit()
 
+# cliente = Cliente('Zezin', 123, 'Rua passa nada', 'zezin@hotmail.com')
 
-loja = Loja('LOJA')
-produto1 = Produto('Celular', 1200, 5, 'Eletronico')
-produto2 = Produto('Tv', 4000, 10, 'Eletronico')
-produto3 = Produto('Sabão', 5, 10, 'Limpeza')
-produto4 = Produto('Arroz', 10, 20, 'Alimenticio')
-loja.lista_de_produtos.extend([produto1, produto2, produto3, produto4])
-cliente = Cliente('Zezin', 123, 'Rua passa nada', 'zezin@hotmail.com')
-while True:
-    print(loja.nome)
-    loja.exibir_catalogo()
-    opcao = int(input('''
+def main():
+    while True: # cadastro do cliente
+        titulo(f'{loja.nome} - CADASTRO'.center(75))
+        print('CADASTRO')
+        nome = str(input('Nome: '))
+        endereco = str(input('Endereco: '))
+        email = valida_email('E-mail: ')
+        usuario_id = randint(1000, 5000)
+        cliente = Cliente(nome, usuario_id, endereco, email, )
+        break
+
+    while True: # menu
+        titulo(f'{loja.nome} - CATALOGO'.center(75))
+        loja.exibir_catalogo()
+        opcao = valida_int('''
 [1] ADICIONAR AO CARRINHO
 [2] REMOVER DO CARRINHO
 [3] VER CARRINHO
 [4] ALTERAR QUANTIDADE
 [5] FINALIZAR COMPRA 
-> '''))
+> ''')
+        if opcao == 1 or opcao == 2 or opcao == 4:
+            nome_do_produto = input('Informe o nome do produto: ').strip().capitalize()
+            if opcao == 1:
+                cliente.adicionar_produto(nome_do_produto)
+            elif opcao ==2:
+                cliente.remover_produto(nome_do_produto)
+            elif opcao == 4:
+                res = str(input('Deseja (A)umentar ou (D)iminiuir? ')).strip().upper()[0]
+                cliente.alterar_quantidade(nome_do_produto, res)
 
-    if opcao == 1 or opcao == 2 or opcao == 4:
-        nome_do_produto = input('Informe o nome do produto: ').strip().capitalize()
-        if opcao == 1:
-            cliente.adicionar_produto(nome_do_produto)
-        elif opcao ==2:
-            cliente.remover_produto(nome_do_produto)
-        elif opcao == 4:
-            res = str(input('Deseja (A)umentar ou (D)iminiuir? ')).strip().upper()[0]
-            cliente.alterar_quantidade(nome_do_produto, res)
+        elif opcao == 3:
+            cliente.exibir_carrinho()
 
-    elif opcao == 3:
-        cliente.exibir_carrinho()
+        elif opcao == 5:
+            cliente.finalizar_compra()
 
-    elif opcao == 5:
-        cliente.finalizar_compra()
+        else:
+            print('Informe uma opção válida(tente um número entre 1 e 5).')
+
+if __name__ == '__main__':
+    loja = Loja('AMAZONIA')
+    produto1 = Produto('Celular', 1200, 5, 'Eletronico')
+    produto2 = Produto('Tv', 4000, 10, 'Eletronico')
+    produto3 = Produto('Sabão', 25, 10, 'Limpeza')
+    produto4 = Produto('Mesa', 300, 20, 'Alimenticio')
+    loja.lista_de_produtos.extend([produto1, produto2, produto3, produto4])
+    main()
